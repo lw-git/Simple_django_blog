@@ -1,16 +1,40 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block content %}
 <div class="post-entry">
-	<h2>{{ object.title }}</h2>
-	<p>{{ object.body|linebreaks }}</p>	
+	<h2>{{ post.title }}</h2>
+	<p>{{ post.body|linebreaks }}</p>	
 </div>
 
 {% if user.is_authenticated %}
-	{% if user == object.author %}			
+	{% if user == post.author %}			
 	<p><a href="{% url 'post_edit' post.pk %}">+ Edit Blog Post</a></p>
 	<p><a href="{% url 'post_delete' post.pk %}">+ Delete Blog Post</a></p>
 	{% endif %}
+{% endif %}
+
+{% for comment in comments.all %}
+	<div class="comment">
+		<p class="info">
+			Comment by <span class="red">{{ comment.name }}</span>			
+		</p>
+		{{ comment.body|linebreaks }}		
+	</div>
+	{% empty %}
+	<p>There are no comments yet.</p>
+{% endfor %}
+<br />
+{% if new_comment %}
+	<h2>Your comment has been added.</h2>
+{% else %}
+	<h2>Add a new comment</h2>
+	<form action="." method="post">
+		{{ comment_form.as_p }}
+		{% csrf_token %}
+		<button class="btn btn-success" type="submit">Add comment</button>
+	</form>
 {% endif %}
 
 {% endblock content %}

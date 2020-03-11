@@ -1,10 +1,12 @@
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 
 from .models import Post
+from .forms import CommentForm
 
 
 class BlogListView(ListView):
@@ -12,9 +14,25 @@ class BlogListView(ListView):
     template_name = 'home.html'
 
 
-class BlogDetailView(DetailView):
-    model = Post
-    template_name = 'post_detail.html'
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    new_comment = None
+    if request.method == 'POST':
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            new_comment = comment_form.save(commit=False)
+            new_comment.post = post
+            new_comment.save()
+    else:
+        comment_form = CommentForm()
+
+    return render(request,
+                  'post_detail.html',
+                  {'post': post,
+                   'comments': post.comments,
+                   'new_comment': new_comment,
+                   'comment_form': comment_form})
 
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
