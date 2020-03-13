@@ -28,15 +28,11 @@
 	<p>There are no comments yet.</p>
 {% endfor %}
 <br />
-{% if new_comment %}
-	<h2>Your comment has been added.</h2>
-{% else %}
-	<h2>Add a new comment</h2>
-	<form action="." method="post">
-		{{ comment_form.as_p }}
-		{% csrf_token %}
-		<button class="btn btn-success" type="submit">Add comment</button>
-	</form>
-{% endif %}
+<h2>Add a new comment</h2>
+<form action="." method="post">
+	{{ comment_form.as_p }}
+	{% csrf_token %}
+	<button class="btn btn-success" type="submit">Add comment</button>
+</form>
 
 {% endblock content %}

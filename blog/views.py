@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from .models import Post
 from .forms import CommentForm
@@ -24,14 +24,13 @@ def post_detail(request, post_id):
             new_comment = comment_form.save(commit=False)
             new_comment.post = post
             new_comment.save()
+            return redirect(reverse('post_detail', args=[post_id]))
     else:
         comment_form = CommentForm()
 
-    return render(request,
-                  'post_detail.html',
+    return render(request, 'post_detail.html',
                   {'post': post,
                    'comments': post.comments,
-                   'new_comment': new_comment,
                    'comment_form': comment_form})
 
 
