@@ -20,7 +20,14 @@
 {% for comment in comments.all %}
 	<div class="comment">
 		<p class="info">
-			Comment by <span class="red">{{ comment.name }}</span>			
+			Comment by 	
+			{% if comment.author_status == 'staff' %}
+				<span class="red">{{ comment.name }}</span>
+			{% elif comment.author_status == 'user' %}	
+				<span class="blue">{{ comment.name }}</span>
+			{% else %}
+				{{ comment.name }}
+			{% endif %}
 		</p>
 		{{ comment.body|linebreaks }}		
 	</div>
@@ -29,10 +36,12 @@
 {% endfor %}
 <br />
 <h2>Add a new comment</h2>
+<br />
 <form action="." method="post">
-	{{ comment_form.as_p }}
-	{% csrf_token %}
+	{% csrf_token %}	
+	{% for field in comment_form.visible_fields %}	
+		<p>{{ field }}</p>
+	{% endfor %}	
 	<button class="btn btn-success" type="submit">Add comment</button>
 </form>
-
 {% endblock content %}

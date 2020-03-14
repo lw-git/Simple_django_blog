@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 
+
 from .models import Post
 from .forms import CommentForm
 
@@ -19,14 +20,24 @@ def post_detail(request, post_id):
 
     new_comment = None
     if request.method == 'POST':
-        comment_form = CommentForm(data=request.POST)
+        comment_form = CommentForm(data=request.POST, **{'user': request.user})
         if comment_form.is_valid():
             new_comment = comment_form.save(commit=False)
             new_comment.post = post
+
+            if request.user.is_authenticated:
+                new_comment.name = request.user.username
+                new_comment.email = request.user.email
+                if request.user.is_staff:
+                    new_comment.author_status = 'staff'
+                else:
+                    new_comment.author_status = 'user'
+
             new_comment.save()
             return redirect(reverse('post_detail', args=[post_id]))
+
     else:
-        comment_form = CommentForm()
+        comment_form = CommentForm(**{'user': request.user})
 
     return render(request, 'post_detail.html',
                   {'post': post,

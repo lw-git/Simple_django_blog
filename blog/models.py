@@ -25,8 +25,10 @@ class Comment(models.Model):
     )
     name = models.CharField(max_length=80)
     email = models.EmailField()
-    body = models.TextField()
+    body = models.TextField(max_length=2000)
     created = models.DateTimeField(auto_now_add=True)
+    # anonymous, user, staff
+    author_status = models.CharField(max_length=30, default='anonymous')
 
     class Meta:
         ordering = ('created',)
