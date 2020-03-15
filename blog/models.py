@@ -29,6 +29,7 @@ class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     # anonymous, user, staff
     author_status = models.CharField(max_length=30, default='anonymous')
+    active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ('created',)

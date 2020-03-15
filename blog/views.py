@@ -18,6 +18,7 @@ class BlogListView(ListView):
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
 
+    comments = post.comments.filter(active=True)
     new_comment = None
     if request.method == 'POST':
         comment_form = CommentForm(data=request.POST, **{'user': request.user})
@@ -41,7 +42,7 @@ def post_detail(request, post_id):
 
     return render(request, 'post_detail.html',
                   {'post': post,
-                   'comments': post.comments,
+                   'comments': comments,
                    'comment_form': comment_form})
 
 
