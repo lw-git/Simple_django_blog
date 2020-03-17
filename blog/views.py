@@ -12,6 +12,7 @@ from .forms import CommentForm
 
 class BlogListView(ListView):
     model = Post
+    context_object_name = 'posts'
     template_name = 'home.html'
 
 
