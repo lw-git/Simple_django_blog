@@ -66,8 +66,10 @@ class BlogUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.author != self.request.user:
-            raise PermissionDenied
+        if not self.request.user.is_staff:
+            if obj.author != self.request.user:
+                raise PermissionDenied
+
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -79,6 +81,8 @@ class BlogDeleteView(LoginRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.author != self.request.user:
-            raise PermissionDenied
+        if not self.request.user.is_staff:
+            if obj.author != self.request.user:
+                raise PermissionDenied
+
         return super().dispatch(request, *args, **kwargs)

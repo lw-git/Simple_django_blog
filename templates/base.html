@@ -36,6 +36,11 @@
 			<div class="dropdown-menu dropdown-menu-right"
 			aria-labelledby="userMenu">	
 				<a class="dropdown-item" href="{% url 'post_new' %}">New Post</a>
+				{% if 'post' in request.path and 'new' not in request.path %}			
+				<a  class="dropdown-item" href="{% url 'post_edit' post.pk %}">Edit Post</a>
+				<a class="dropdown-item" href="{% url 'post_delete' post.pk %}">Delete Post</a>	
+				{% endif %}
+				
 				{% if request.path == '/' %}
 		        <a class="dropdown-item" href="#" id="toggle-sidebar">Sidebar</a>
 		        {% endif %}
@@ -71,7 +76,7 @@
 				{% block content %}
 
 				{% endblock content %}
-        	</div>        	
+        	</div>
       	</div>      	
 		
 		<!-- Optional JavaScript -->

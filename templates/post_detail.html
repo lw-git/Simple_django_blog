@@ -8,15 +8,6 @@
 	<p>{{ post.body|linebreaks }}</p>	
 </div>
 
-{% if user.is_authenticated %}
-	{% if user == post.author %}
-	<br />		
-	<p><a href="{% url 'post_edit' post.pk %}" class="btn btn-primary ml-2">Edit Post</a>
-	<a href="{% url 'post_delete' post.pk %}" class="btn btn-primary ml-2">Delete Post</a></p>
-	<br />
-	{% endif %}
-{% endif %}
-
 {% for comment in comments.all %}
 	<div class="comment">
 		<p class="info">
