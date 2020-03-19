@@ -4,4 +4,9 @@ $(document).ready(function () {
       	e.preventDefault();
       	$('#content').toggleClass('col-lg-8 col-lg-12');
 	});
+
+	setTimeout(function(){		
+		$("#message").fadeOut('slow');
+	}, 3000);
 });
+
