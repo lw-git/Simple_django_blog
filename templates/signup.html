@@ -28,22 +28,7 @@
                     </ul>
                     </div>
                 </div>
-                {% endif %}
-                {% if form.non_field_errors %}
-                <div id="message" class="container">
-                    <div class="alert alert-danger alert-dismissible text-center" role="alert"> 
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <strong>Error: </strong>                            
-                    <ul class="list-unstyled">
-                        {% for error in form.non_field_errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                    </div>
-                </div>
-                {% endif %}
+                {% endif %}                                
                 <div class="signup_form_fields">
                 {% for field in form.visible_fields %}
                     <p>{{ field.label_tag }}</p>                    
