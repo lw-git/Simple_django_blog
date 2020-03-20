@@ -13,11 +13,11 @@
 		href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
 		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81i\
 		uXoPkFOJwJ8ERdknLPMO"
-		crossorigin="anonymous">
+		crossorigin="anonymous">		
 	</head>
 	<body>
-		<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
-			<a class="navbar-brand" href="{% url 'home' %}">Django blog</a>
+		<nav class="navbar navbar-expand-md navbar-dark bg-primary mb-4">
+			<strong><a class="navbar-brand" href="{% url 'home' %}">Django blog</a></strong>
 
 			<button class="navbar-toggler" type="button" data-toggle="collapse"
 			data-target="#navbarCollapse" aria-controls="navbarCollapse"
@@ -51,7 +51,7 @@
 
 			{% else %}
 				<form class="form-inline ml-auto">
-					<a href="{% url 'login' %}" class="btn btn-outline-secondary">Log In</a>
+					<a href="{% url 'login' %}" class="btn btn-outline-dark">Log In</a>
 					<a href="{% url 'signup' %}" class="btn btn-primary ml-2">Sign up</a>
 					{% if request.path == '/' %}
 		            <a href="#" id="toggle-sidebar" class="btn btn-primary ml-2">Sidebar</a>		               
@@ -61,16 +61,17 @@
 			</div>
 		</nav>
 		<div class="row">			
-			{% if request.path == '/' %}	
-				<div id="sidebar" class="col-xs-12 order-first col-lg-4  order-lg-last hidden">
-	        		<!-- Sidebar -->
-				    <nav id="sidebar-inner">
-				        <div class="sidebar-header">
-				            <h4>About Blog</h4>				            
-				        </div>
-				        <p>This is simple blog on django. It has {{ posts.count }} posts.</p>				        
-				    </nav>
-	        	</div>
+			{% if request.path == '/' %}				
+			<div id="sidebar" class="col-xs-12 order-first col-lg-4  order-lg-last hidden">
+        		<!-- Sidebar -->
+			    <nav id="sidebar-inner">
+			        <div class="sidebar-header">
+			            <h4>About Blog</h4>				            
+			        </div>
+			        <p>This is simple blog on django. It has {{ posts.count }} posts.</p>				        
+			    </nav>
+        	</div>	        
+	        <br />
 		    {% endif %}
 			<div id="content" class="col-lg-12">				
 				{% block content %}

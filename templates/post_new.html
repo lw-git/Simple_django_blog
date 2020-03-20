@@ -1,10 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-	<h1>New Post</h1>
-	<form action="" method="post">
-		{% csrf_token %}
-		{{ form.as_p }}
-		<button class="btn btn-success" type="submit">Save</button>
-	</form>
+<section id="new_post" class="bg-light py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 mx-auto">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4>New Post</h4>
+          </div>
+          <div class="card-body">
+            
+            <form action="" method="POST">
+                {% csrf_token %}                
+                <div class="form_fields">
+                {% for field in form.visible_fields %} 
+                	{{ field.label_tag }}                  
+                    {{ field }}
+                    <br />                    
+                {% endfor %}
+                </div>
+
+              <input type="submit" value="Save" class="btn btn-success btn-block">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock content %}

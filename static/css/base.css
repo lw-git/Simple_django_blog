@@ -1,53 +1,20 @@
-body {
-font-family: 'Source Sans Pro', sans-serif;
-font-size: 18px;
-}
-header {
-border-bottom: 1px solid #999;
-margin-bottom: 2rem;
-display: flex;
-}
-header h1 a {
-color: red;
-text-decoration: none;
-}
-.nav-left {
-margin-right: auto;
-}
-.nav-right {
-display: flex;
-padding-top: 2rem;
-}
-.post-entry {
-margin-bottom: 2rem;
-}
-.post-entry h2 {
-margin: 0.5rem 0;
-}
-.post-entry h2 a,
-.post-entry h2 a:visited {
-color: blue;
-text-decoration: none;
-}
-.post-entry p {
-margin: 0;
-font-weight: 400;
-}
-.post-entry h2 a:hover {
-color: red;
-}
-
 /* comments */
 .comment {
-    padding:10px;
+    padding:15px;
+    font-size:18px;
 }
 .comment:nth-child(even) {
-    background:#efefef;
+    background:#cdcdcd;
+    color: black;
 }
-.comment .info {
-    font-weight:bold;
+.comment:nth-child(even) .info {
+    background:#cdcdcd;
+    color: black;
+}
+
+.comment .info {    
     font-size:12px;
-    color:#666;
+    color: black;
 }
 .red {	
 	color: red;
@@ -58,13 +25,13 @@ color: red;
 /* Side Bar */
 
 #sidebar {    
-    background-color:#efefef;
+    background-color:#f8f9fa;
     height: 100%;
     min-height:200px;
     padding:0;
 }
 .sidebar-header {
-    background: #212529;
+    background: #007bff;
     color: #fff;
     height: 60px;
     padding: 15px;
@@ -88,8 +55,8 @@ color: red;
 }
 
 @media (max-width: 992px) {
-    #sidebar { 
-        padding-left: 15px;
+    #sidebar {        
+        margin: 20px 30px;
     }   
     #sidebar p {
         padding-top: 10px;    
@@ -97,10 +64,25 @@ color: red;
 }
 
 /* For forms */
-.signup_form_fields input {
+.form_fields input {
     display: block;
     width: 100%;
     height: calc(2.25rem + 2px);
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.form_fields textarea {
+    display: block;
+    width: 100%;
+    height: calc(12.25rem + 2px);
     padding: .375rem .75rem;
     font-size: 1rem;
     line-height: 1.5;

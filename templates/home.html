@@ -1,12 +1,19 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block content %}		
 	{% for post in object_list %}
-		<div class='post-entry'>
-			<h2><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h2>
-			<hr />
-			<p>{{ post.body|linebreaks }}</p>
-			<hr />
-		</div>
+	<section class="bg-light py-5">
+		<div class="container">
+		    <div class="row">
+		      <div class="col-md-12 mx-auto">        
+		            <h4><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h4>
+					<hr />                     
+		            <p>{{ post.body|linebreaks }}</p>  
+		            <br />     
+		      </div>
+		    </div>
+		</div> 		
+	</section>
+	<br />		 
 	{% endfor %}	
 {% endblock content %}

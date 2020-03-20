@@ -3,36 +3,75 @@
 {% load static %}
 
 {% block content %}
-<div class="post-entry">
-	<h2>{{ post.title }}</h2>
-	<p>{{ post.body|linebreaks }}</p>	
-</div>
 
-{% for comment in comments.all %}
-	<div class="comment">
-		<p class="info">
-			Comment by 	
-			{% if comment.author_status == 'staff' %}
-				<span class="red">{{ comment.name }}</span>
-			{% elif comment.author_status == 'user' %}	
-				<span class="blue">{{ comment.name }}</span>
-			{% else %}
-				{{ comment.name }}
-			{% endif %}
-		</p>
-		{{ comment.body|linebreaks }}		
-	</div>
-	{% empty %}
-	<p>There are no comments yet.</p>
-{% endfor %}
+
+<section id="post" class="bg-light py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 mx-auto">        
+            <h2>{{ post.title }}</h2>
+            <hr />                     
+            <p>{{ post.body|linebreaks }}</p>       
+      </div>
+    </div>
+  </div>
+</section>
 <br />
-<h2>Add a new comment</h2>
+<section id="comments" class="bg-light py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 mx-auto"> 
+      <h4>Comments:</h4> 
+      <hr />       
+        {% for comment in comments.all %}
+			<div class="comment">
+				<p class="info">
+					<span style="float:right;">added {{ comment.created | date }}</span>
+					Comment by 	
+					{% if comment.author_status == 'staff' %}
+						<span class="red">{{ comment.name }}</span>
+					{% elif comment.author_status == 'user' %}	
+						<span class="blue">{{ comment.name }}</span>
+					{% else %}
+						{{ comment.name }}
+					{% endif %}
+					
+				</p>
+				{{ comment.body|linebreaks }}		
+			</div>
+			{% empty %}
+			<p>There are no comments yet.</p>
+		{% endfor %}     
+      </div>
+    </div>
+  </div>
+</section>
 <br />
-<form action="." method="post">
-	{% csrf_token %}	
-	{% for field in comment_form.visible_fields %}	
-		<p>{{ field }}</p>
-	{% endfor %}	
-	<button class="btn btn-success" type="submit">Add comment</button>
-</form>
+<section id="add_comment" class="bg-light py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 mx-auto">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4>Add a new comment</h4>
+          </div>
+          <div class="card-body">
+            
+            <form action="." method="POST">
+                {% csrf_token %}                
+                <div class="form_fields">
+                {% for field in comment_form.visible_fields %}                    
+                    {{ field }}
+                    <br />                    
+                {% endfor %}
+                </div>
+
+              <input type="submit" value="Add comment" class="btn btn-success btn-block">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock content %}
