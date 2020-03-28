@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section id="signup" class="bg-light py-5">
   <div class="container">
     <div class="row">
-      <div class="col-md-6 mx-auto">
+      <div class="col-lg-8 mx-auto">
         <div class="card">
           <div class="card-header bg-primary text-white">
             <h4>
@@ -37,12 +36,12 @@
                     <p>{{ field.help_text }}</p>
                 {% endfor %}
                 </div>
-              <button type="submit" class="btn btn-success btn-block">Sign up</button>
+              <button type="submit" class="btn btn-success btn-block col-4 mx-auto">Sign up</button>
             </form>
           </div>
         </div>
       </div>
     </div>
   </div>
-</section>
+
 {% endblock %}

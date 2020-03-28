@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section id="delete_post" class="bg-light py-5">
   <div class="container">
     <div class="row">
-      <div class="col-md-6 mx-auto">
+      <div class="mx-auto">
         <div class="card">
           <div class="card-header bg-primary text-white">
             <h4>Delete post</h4>
@@ -14,12 +13,11 @@
             <form action="" method="POST">
                 {% csrf_token %}                
                 <p>Are you sure you want to delete "{{ object.title }}"?</p>
-              <input type="submit" value="Confirm" class="btn btn-danger btn-block">
+              <input type="submit" value="Confirm" class="btn btn-danger btn-block col-4 mx-auto">
             </form>
           </div>
         </div>
       </div>
     </div>
   </div>
-</section>
 {% endblock content %}

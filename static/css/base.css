@@ -1,67 +1,14 @@
-/* comments */
-.comment {
-    padding:15px;
-    font-size:18px;
-}
-.comment:nth-child(even) {
-    background:#cdcdcd;
-    color: black;
-}
-.comment:nth-child(even) .info {
-    background:#cdcdcd;
-    color: black;
-}
-
-.comment .info {    
-    font-size:12px;
-    color: black;
-}
 .red {	
 	color: red;
 }
 .blue {	
 	color: blue;
 }
-/* Side Bar */
 
-#sidebar {    
-    background-color:#f8f9fa;
-    height: 100%;
-    min-height:200px;
-    padding:0;
-}
-.sidebar-header {
-    background: #007bff;
-    color: #fff;
-    height: 60px;
-    padding: 15px;
-}
-
-#sidebar p {	
-    padding-top: 10px;
-    padding-left: 15px;
-    padding-right: 15px;
-}
-#sidebar hr {
-	padding:0;
-}
-
-#content {
-    padding-left: 30px;
-    padding-right: 30px;
-}
 .hidden {
     display: none;
 }
 
-@media (max-width: 992px) {
-    #sidebar {        
-        margin: 20px 30px;
-    }   
-    #sidebar p {
-        padding-top: 10px;    
-    }  
-}
 
 /* For forms */
 .form_fields input {
