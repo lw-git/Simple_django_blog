@@ -8,7 +8,8 @@ class PostAdmin(admin.ModelAdmin):
     				'author',
     				'slug',
     				'created',
-    				'published')
+    				'published',
+    				'author_status')
     list_filter = ('author', 'published')
 
 

@@ -14,9 +14,15 @@ class Post(models.Model):
     slug = models.SlugField(max_length=250, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=True)
+    author_status = models.CharField(max_length=30, default='anonymous')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
+        if self.author.is_staff:
+            self.author_status = 'staff'
+        elif self.author.is_authenticated:
+            self.author_status = 'user'
+        
         super(Post, self).save(*args, **kwargs)
 
     def __str__(self):
