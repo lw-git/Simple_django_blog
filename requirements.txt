@@ -1,2 +1,6 @@
-Django==2.2.10
+Django==2.1
+gunicorn==19.9.0
+psycopg2==2.8.4
+pytils==0.3
 pytz==2019.3
+whitenoise==3.3.1

@@ -4,8 +4,12 @@ from .models import Post, Comment
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author')
-    list_filter = ('author',)
+    list_display = ('title',
+    				'author',
+    				'slug',
+    				'created',
+    				'published')
+    list_filter = ('author', 'published')
 
 
 @admin.register(Comment)
