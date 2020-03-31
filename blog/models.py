@@ -14,22 +14,23 @@ class Post(models.Model):
     slug = models.SlugField(max_length=250, unique=True)
     created = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=True)
-    author_status = models.CharField(max_length=30, default='anonymous')
+    author_status = models.CharField(max_length=30, default='user')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         if self.author.is_staff:
             self.author_status = 'staff'
-        elif self.author.is_authenticated:
-            self.author_status = 'user'
-        
+
         super(Post, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('post_detail', args=[str(self.id)])
+        return reverse('post_detail', args=[str(self.slug)])
+
+    class Meta:
+        ordering = ('-created',)
 
 
 class Comment(models.Model):

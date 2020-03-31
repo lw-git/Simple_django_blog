@@ -4,7 +4,13 @@
 	{% for post in object_list %}
 	<div class="card mb-4">
 	  <div class="card-header">
-	    Posted by {{post.author}}
+	  	<span style="float:right;">{{post.created }}</span>
+	    Posted by <span
+	    {% if post.author_status == 'staff' %}
+	    	class="red"
+	    {% elif post.author_status == 'user' %}
+	    	class="blue"
+	    {% endif %} >{{post.author}}</span> 
 	  </div>
 	  <div class="card-body">
 	    <h5 class="card-title">{{post.title}}</h5>

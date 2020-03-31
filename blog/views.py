@@ -10,14 +10,14 @@ from .models import Post
 from .forms import CommentForm
 
 
-class BlogListView(ListView):
-    model = Post
+class BlogListView(ListView):    
+    queryset = Post.objects.filter(published=True)
     context_object_name = 'posts'
     template_name = 'home.html'
 
 
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
+def post_detail(request, slug):
+    post = get_object_or_404(Post, slug=slug)
 
     comments = post.comments.filter(active=True)
     new_comment = None
@@ -36,7 +36,7 @@ def post_detail(request, post_id):
                     new_comment.author_status = 'user'
 
             new_comment.save()
-            return redirect(reverse('post_detail', args=[post_id]))
+            return redirect(reverse('post_detail', args=[slug]))
 
     else:
         comment_form = CommentForm(**{'user': request.user})
