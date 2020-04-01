@@ -130,3 +130,6 @@ dmypy.json
 
 # .gitignore
 .gitignore
+
+#media
+media/

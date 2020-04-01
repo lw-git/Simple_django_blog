@@ -15,6 +15,7 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=True)
     author_status = models.CharField(max_length=30, default='user')
+    photo = models.ImageField(upload_to='photos/', blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)

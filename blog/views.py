@@ -10,7 +10,7 @@ from .models import Post
 from .forms import CommentForm
 
 
-class BlogListView(ListView):    
+class BlogListView(ListView):
     queryset = Post.objects.filter(published=True)
     context_object_name = 'posts'
     template_name = 'home.html'
