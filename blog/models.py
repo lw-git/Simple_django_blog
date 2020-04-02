@@ -16,6 +16,7 @@ class Post(models.Model):
     published = models.BooleanField(default=True)
     author_status = models.CharField(max_length=30, default='user')
     photo = models.ImageField(upload_to='photos/', blank=True)
+    tags = models.ManyToManyField('Tag', blank=True, related_name='posts')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -52,3 +53,15 @@ class Comment(models.Model):
 
     def __str__(self):
         return 'Comment by {} on {}'.format(self.name, self.post)
+
+
+class Tag(models.Model):
+    title = models.CharField(max_length=50)
+    slug = models.SlugField(default='slug', max_length=100, unique=True)
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        super(Tag, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title

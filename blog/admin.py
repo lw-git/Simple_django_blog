@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment
+from .models import Post, Comment, Tag
 
 
 @admin.register(Post)
@@ -22,3 +22,9 @@ class CommentAdmin(admin.ModelAdmin):
                     'created',
                     'active')
     list_filter = ('active', 'author_status', 'created', 'post')
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('title',
+                    'slug')
