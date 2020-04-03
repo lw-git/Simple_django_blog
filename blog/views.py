@@ -6,7 +6,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 
 
-from .models import Post
+from .models import Post, Tag
 from .forms import CommentForm
 
 
@@ -86,3 +86,13 @@ class BlogDeleteView(LoginRequiredMixin, DeleteView):
                 raise PermissionDenied
 
         return super().dispatch(request, *args, **kwargs)
+
+
+def tags_list(request):
+    tags = Tag.objects.all()
+    return render(request, 'tag_list.html', {'tags': tags})
+
+
+def tag_detail(request, slug):
+    tag = get_object_or_404(Tag, slug__iexact=slug)
+    return render(request, 'tag_detail.html', {'tag': tag})
