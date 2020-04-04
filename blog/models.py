@@ -8,6 +8,7 @@ class Post(models.Model):
     author = models.ForeignKey(
         'auth.User',
         on_delete=models.CASCADE,
+        related_name='posts'
     )
 
     body = models.TextField()

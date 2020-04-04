@@ -101,7 +101,7 @@ def tag_detail(request, slug):
 
 
 def posts_by_author(request, author):
-    post_author = get_object_or_404(User, username=author)
-    posts = Post.objects.filter(published=True).filter(author=post_author.id)
+    user = get_object_or_404(User, username=author)
+    posts = user.posts.filter(published=True)
 
     return render(request, 'home.html', {'posts': posts})
