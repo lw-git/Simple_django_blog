@@ -4,6 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
+from django.contrib.auth.models import User
 
 
 from .models import Post, Tag
@@ -44,7 +45,8 @@ def post_detail(request, slug):
     return render(request, 'post_detail.html',
                   {'post': post,
                    'comments': comments,
-                   'comment_form': comment_form})
+                   'comment_form': comment_form,
+                   'detail': True})
 
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
@@ -96,3 +98,10 @@ def tags_list(request):
 def tag_detail(request, slug):
     tag = get_object_or_404(Tag, slug__iexact=slug)
     return render(request, 'tag_detail.html', {'tag': tag})
+
+
+def posts_by_author(request, author):
+    post_author = get_object_or_404(User, username=author)
+    posts = Post.objects.filter(published=True).filter(author=post_author.id)
+
+    return render(request, 'home.html', {'posts': posts})

@@ -6,12 +6,12 @@
 		<div class="card mb-4">
 		  <div class="card-header">
 		  	<span style="float:right;">{{post.created }}</span>
-		    Posted by <span
+		    Posted by <a href="{% url 'posts_by_author' post.author.id %}"><span
 		    {% if post.author_status == 'staff' %}
 		    	class="red"
 		    {% elif post.author_status == 'user' %}
 		    	class="blue"
-		    {% endif %} >{{post.author}}</span> 
+		    {% endif %} >{{post.author}}</span></a>
 		  </div>
 		  <div class="card-body">
 		    <h5 class="card-title">{{post.title}}</h5>
@@ -26,6 +26,6 @@
 		    	{% endfor %}
 		    {% endif %}
 		  </div>
-		</div>	
+		</div>
 	{% endfor %}
 {% endblock content %}

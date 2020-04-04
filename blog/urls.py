@@ -13,6 +13,7 @@ urlpatterns = [
     path('post/<str:slug>/edit/', BlogUpdateView.as_view(), name='post_edit'),
     path('post/new/', BlogCreateView.as_view(), name='post_new'),
     path('post/<str:slug>/', views.post_detail, name='post_detail'),
+    path('posts/by/<str:author>/', views.posts_by_author, name='posts_by_author'),
     path('', BlogListView.as_view(), name='home'),
     path('tags/', views.tags_list, name='tag_list'),
     path('tag/<str:slug>/', views.tag_detail, name='tag_detail'),
