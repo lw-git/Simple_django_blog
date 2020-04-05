@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 
 from .models import Post, Tag
@@ -12,9 +13,39 @@ from .forms import CommentForm
 
 
 class BlogListView(ListView):
-    queryset = Post.objects.filter(published=True)
-    context_object_name = 'posts'
-    template_name = 'home.html'
+
+    def get(self, request, author=None):
+        if author:
+            user = get_object_or_404(User, username=author)
+            posts = user.posts.filter(published=True)
+        else:
+            posts = Post.objects.filter(published=True)
+
+        paginator = Paginator(posts, 3)
+        page_number = request.GET.get('page', 1)
+        page = paginator.get_page(page_number)
+
+        is_paginated = page.has_other_pages()
+
+        if page.has_previous():
+            prev_url = '?page={}'.format(page.previous_page_number())
+        else:
+            prev_url = ''
+
+        if page.has_next():
+            next_url = '?page={}'.format(page.next_page_number())
+        else:
+            next_url = ''
+
+        context = {
+           'page': page,
+           'prev_url': prev_url,
+           'next_url': next_url,
+           'is_paginated': is_paginated
+        }
+
+        return render(request, 'home.html', context)
+
 
 
 def post_detail(request, slug):
@@ -98,10 +129,3 @@ def tags_list(request):
 def tag_detail(request, slug):
     tag = get_object_or_404(Tag, slug__iexact=slug)
     return render(request, 'tag_detail.html', {'tag': tag})
-
-
-def posts_by_author(request, author):
-    user = get_object_or_404(User, username=author)
-    posts = user.posts.filter(published=True)
-
-    return render(request, 'home.html', {'posts': posts})
