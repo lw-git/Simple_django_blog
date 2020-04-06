@@ -6,6 +6,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 
 from .models import Post, Tag
@@ -15,11 +16,18 @@ from .forms import CommentForm
 class BlogListView(ListView):
 
     def get(self, request, author=None):
+        search_query = request.GET.get('search', '')
+
+        posts = Post.objects.filter(published=True)
+
+        if search_query:
+            posts = Post.objects.filter(Q(title__icontains=search_query) |
+                                        Q(body__icontains=search_query),
+                                        published=True)
+
         if author:
             user = get_object_or_404(User, username=author)
             posts = user.posts.filter(published=True)
-        else:
-            posts = Post.objects.filter(published=True)
 
         paginator = Paginator(posts, 3)
         page_number = request.GET.get('page', 1)
