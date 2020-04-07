@@ -19,6 +19,7 @@ class BlogListView(ListView):
         search_query = request.GET.get('search', '')
 
         posts = Post.objects.filter(published=True)
+        posts_count = posts.count()
 
         if search_query:
             posts = Post.objects.filter(Q(title__icontains=search_query) |
@@ -49,7 +50,8 @@ class BlogListView(ListView):
            'page': page,
            'prev_url': prev_url,
            'next_url': next_url,
-           'is_paginated': is_paginated
+           'is_paginated': is_paginated,
+           'posts_count': posts_count
         }
 
         return render(request, 'home.html', context)
