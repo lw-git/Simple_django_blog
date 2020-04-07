@@ -6,28 +6,16 @@
       <div class="col-lg-8 mx-auto">
         <div class="card">
           <div class="card-header bg-primary text-white">
-            <h4>
-              <i class="fas fa-sign-in-alt"></i> Login</h4>
+            <h4>Login</h4>
           </div>
           <div class="card-body">
             
             <form action="{% url 'login' %}" method="POST">
-                {% csrf_token %}
-                {% if form.non_field_errors %}
-                <div id="message" class="container">
-			        <div class="alert alert-danger alert-dismissible text-center" role="alert">	
-			        <button type="button" class="close" data-dismiss="alert">
-			        	<span aria-hidden="true">&times;</span>
-			        </button>
-			        <strong>Error: </strong>		       		        
-				    <ul class="list-unstyled">
-				      	{% for error in form.non_field_errors %}
-				       		<li>{{ error }}</li>
-				      	{% endfor %}
-				    </ul>
-			      	</div>
-			    </div>
-			    {% endif %}
+              {% csrf_token %}
+              {% with form.non_field_errors as errors %}
+                {% include "partials/_form_errors.html" %}
+              {% endwith %}
+
               <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" name="username" class="form-control" required>

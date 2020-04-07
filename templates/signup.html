@@ -6,34 +6,22 @@
       <div class="col-lg-8 mx-auto">
         <div class="card">
           <div class="card-header bg-primary text-white">
-            <h4>
-              <i class="fas fa-sign-in-alt"></i> Sign up</h4>
+            <h4>Sign up</h4>
           </div>
           <div class="card-body">
             
             <form action="{% url 'signup' %}" method="POST">
                 {% csrf_token %}
-                {% if form.non_field_errors %}
-                <div id="message" class="container">
-                    <div class="alert alert-danger alert-dismissible text-center" role="alert"> 
-                    <button type="button" class="close" data-dismiss="alert">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <strong>Error: </strong>                            
-                    <ul class="list-unstyled">
-                        {% for error in form.non_field_errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                    </div>
-                </div>
-                {% endif %}                                
+                {% with form.non_field_errors as errors %}
+                    {% include "partials/_form_errors.html" %}
+                {% endwith %} 
                 <div class="form_fields">
                 {% for field in form.visible_fields %}
-                    <p>{{ field.label_tag }}</p>                    
-                    <p>{{ field.errors }}</p>                    
-                    <p>{{ field }}</p>
-                    <p>{{ field.help_text }}</p>
+                    {% with field.errors as errors %}
+                        {% include "partials/_form_errors.html" %}
+                    {% endwith %}
+                    {{ field.label_tag }} 
+                    <p>{{ field }}</p>                    
                 {% endfor %}
                 </div>
               <button type="submit" class="btn btn-success btn-block col-4 mx-auto">Sign up</button>
