@@ -15,11 +15,15 @@ from .forms import CommentForm
 
 class BlogListView(ListView):
 
-    def get(self, request, author=None):
+    def get(self, request, author=None, slug=None):
         search_query = request.GET.get('search', '')
 
         posts = Post.objects.filter(published=True)
         posts_count = posts.count()
+
+        if slug:
+            tag = get_object_or_404(Tag, slug__iexact=slug)
+            posts = tag.posts.all()
 
         if search_query:
             posts = Post.objects.filter(Q(title__icontains=search_query) |
@@ -46,16 +50,13 @@ class BlogListView(ListView):
         else:
             next_url = ''
 
-        context = {
-           'page': page,
-           'prev_url': prev_url,
-           'next_url': next_url,
-           'is_paginated': is_paginated,
-           'posts_count': posts_count
-        }
+        context = {'page': page,
+                   'prev_url': prev_url,
+                   'next_url': next_url,
+                   'is_paginated': is_paginated,
+                   'posts_count': posts_count}
 
         return render(request, 'home.html', context)
-
 
 
 def post_detail(request, slug):
@@ -134,8 +135,3 @@ class BlogDeleteView(LoginRequiredMixin, DeleteView):
 def tags_list(request):
     tags = Tag.objects.all()
     return render(request, 'tag_list.html', {'tags': tags})
-
-
-def tag_detail(request, slug):
-    tag = get_object_or_404(Tag, slug__iexact=slug)
-    return render(request, 'tag_detail.html', {'tag': tag})

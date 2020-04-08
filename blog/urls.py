@@ -16,5 +16,5 @@ urlpatterns = [
     path('posts/by/<str:author>/', BlogListView.as_view(), name='posts_by_author'),
     path('', BlogListView.as_view(), name='home'),
     path('tags/', views.tags_list, name='tag_list'),
-    path('tag/<str:slug>/', views.tag_detail, name='tag_detail'),
+    path('tag/<str:slug>/', BlogListView.as_view(), name='tag_detail'),
 ]
