@@ -6,18 +6,20 @@
           <div class="card-header bg-primary text-white">
             <h4>Edit post</h4>
           </div>
-          <div class="card-body">
-            
+          <div class="card-body">            
             <form action="" method="POST">
-                {% csrf_token %}                
-                <div class="form_fields">
+                {% csrf_token %}
+                {% with form.non_field_errors as errors %}
+                    {% include "partials/_form_errors.html" %}
+                {% endwith %}                
                 {% for field in form.visible_fields %} 
+                  {% with field.errors as errors %}
+                    {% include "partials/_form_errors.html" %}
+                  {% endwith %}
                 	{{ field.label_tag }}                  
                     {{ field }}
                     <br />                    
                 {% endfor %}
-                </div>
-
               <input type="submit" value="Update" class="btn btn-success btn-block col-4 mx-auto">
             </form>
           </div>

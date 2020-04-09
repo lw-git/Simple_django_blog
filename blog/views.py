@@ -10,7 +10,7 @@ from django.db.models import Q
 
 
 from .models import Post, Tag
-from .forms import CommentForm
+from .forms import CommentForm, PostForm
 
 
 class BlogListView(ListView):
@@ -92,9 +92,8 @@ def post_detail(request, slug):
 
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
-    model = Post
+    form_class = PostForm
     template_name = 'post_new.html'
-    fields = ['title', 'body']
     login_url = 'login'
 
     def form_valid(self, form):
@@ -104,8 +103,8 @@ class BlogCreateView(LoginRequiredMixin, CreateView):
 
 class BlogUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
+    form_class = PostForm
     template_name = 'post_edit.html'
-    fields = ['title', 'body']
     login_url = 'login'
 
     def dispatch(self, request, *args, **kwargs):
