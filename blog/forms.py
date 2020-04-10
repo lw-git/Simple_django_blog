@@ -10,12 +10,18 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['name', 'email', 'body']
 
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control',
+                                           'placeholder': 'Name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control',
+                                            'placeholder': 'Email'}),
+            'body': forms.Textarea(attrs={'class': 'form-control',
+                                          'placeholder': 'Comment text'})
+        }
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super(CommentForm, self).__init__(*args, **kwargs)
-        self.fields['name'].widget.attrs['placeholder'] = 'Name'
-        self.fields['email'].widget.attrs['placeholder'] = 'Email'
-        self.fields['body'].widget.attrs['placeholder'] = 'Comment text'
         if user.is_authenticated:
             self.fields = {'body': self.fields['body']}
 

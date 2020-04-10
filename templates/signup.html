@@ -14,14 +14,28 @@
                 {% with form.non_field_errors as errors %}
                     {% include "partials/_form_errors.html" %}
                 {% endwith %} 
-                <div class="form_fields">
-                {% for field in form.visible_fields %}
-                    {% with field.errors as errors %}
+                <div class="form-group">
+                    {% with form.username.errors as errors %}
                         {% include "partials/_form_errors.html" %}
                     {% endwith %}
-                    {{ field.label_tag }} 
-                    <p>{{ field }}</p>                    
-                {% endfor %}
+                    <label for="id_username">Username:</label>
+                    <input type="text" name="username" class="form-control"maxlength="150" autofocus required id="id_username">
+                </div>
+
+                <div class="form-group">
+                    {% with form.password1.errors as errors %}
+                        {% include "partials/_form_errors.html" %}
+                    {% endwith %}
+                    <label for="id_password1">Password:</label>
+                    <input type="password" name="password1" class="form-control" required id="id_password1">
+                </div>
+                 
+                <div class="form-group">
+                    {% with form.password2.errors as errors %}
+                        {% include "partials/_form_errors.html" %}
+                    {% endwith %}
+                    <label for="id_password2">Password confirmation:</label>
+                    <input type="password" name="password2" class="form-control" required id="id_password2">
                 </div>
               <button type="submit" class="btn btn-success btn-block col-4 mx-auto">Sign up</button>
             </form>

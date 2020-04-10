@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import User
@@ -59,36 +59,42 @@ class BlogListView(ListView):
         return render(request, 'home.html', context)
 
 
-def post_detail(request, slug):
-    post = get_object_or_404(Post, slug=slug)
+class BlogDetailView(DetailView):
+    model = Post
+    context_object_name = 'post'
+    template_name = 'post_detail.html'
 
-    comments = post.comments.filter(active=True)
-    new_comment = None
-    if request.method == 'POST':
-        comment_form = CommentForm(data=request.POST, **{'user': request.user})
-        if comment_form.is_valid():
-            new_comment = comment_form.save(commit=False)
+    def get_context_data(self, *args, **kwargs):
+        context = super(BlogDetailView, self).get_context_data(*args, **kwargs)
+        context['comment_form'] = CommentForm(**{'user': self.request.user})
+        context['comments'] = self.get_object().comments.filter(active=True)
+        context['detail'] = True
+        return context
+
+    def post(self, request, *args, **kwargs):
+        post = self.get_object()
+        form = CommentForm(data=request.POST, **{'user': request.user})
+        if form.is_valid():
+            new_comment = form.save(commit=False)
             new_comment.post = post
+            user = self.request.user
 
-            if request.user.is_authenticated:
-                new_comment.name = request.user.username
-                new_comment.email = request.user.email
-                if request.user.is_staff:
+            if user.is_authenticated:
+                new_comment.name = user.username
+                new_comment.email = user.email
+                if user.is_staff:
                     new_comment.author_status = 'staff'
                 else:
                     new_comment.author_status = 'user'
 
             new_comment.save()
-            return redirect(reverse('post_detail', args=[slug]))
-
-    else:
-        comment_form = CommentForm(**{'user': request.user})
-
-    return render(request, 'post_detail.html',
-                  {'post': post,
-                   'comments': comments,
-                   'comment_form': comment_form,
-                   'detail': True})
+            return redirect(reverse('post_detail', args=[post.slug]))
+        else:
+            return render(request, 'post_detail.html',
+                          {'post': post,
+                           'comments': post.comments.filter(active=True),
+                           'comment_form': form,
+                           'detail': True})
 
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
@@ -131,6 +137,7 @@ class BlogDeleteView(LoginRequiredMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
 
-def tags_list(request):
-    tags = Tag.objects.all()
-    return render(request, 'tag_list.html', {'tags': tags})
+class TagListView(ListView):
+    model = Tag
+    template_name = 'tag_list.html'
+    context_object_name = 'tags'

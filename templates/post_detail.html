@@ -52,13 +52,14 @@
           </div>
           <div class="card-body">            
             <form action="." method="POST">
-                {% csrf_token %}                
-                <div class="form_fields">
-                {% for field in comment_form.visible_fields %}                    
+                {% csrf_token %}               
+                {% for field in comment_form.visible_fields %}
+                    {% with field.errors as errors %}
+                      {% include "partials/_form_errors.html" %}
+                    {% endwith %}                    
                     {{ field }}
                     <br />                    
-                {% endfor %}
-                </div>
+                {% endfor %}               
               <input type="submit" value="Add comment" class="btn btn-success btn-block col-4 mx-auto">
             </form>
           </div>
