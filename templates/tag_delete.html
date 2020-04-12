@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="mx-auto">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4>Delete tag</h4>
+          </div>
+          <div class="card-body">
+            
+            <form action="" method="POST">
+                {% csrf_token %}                
+                <p>Are you sure you want to delete "{{ object.title }}"?</p>
+              <input type="submit" value="Confirm" class="btn btn-danger btn-block col-4 mx-auto">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

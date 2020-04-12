@@ -10,12 +10,14 @@ from django.db.models import Q
 
 
 from .models import Post, Tag
-from .forms import CommentForm, PostForm
+from .forms import CommentForm, PostForm, TagForm
 
 
 class BlogListView(ListView):
 
     def get(self, request, author=None, slug=None):
+        tag_detail = False
+        tag_slug = slug
         search_query = request.GET.get('search', '')
 
         posts = Post.objects.filter(published=True)
@@ -24,6 +26,7 @@ class BlogListView(ListView):
         if slug:
             tag = get_object_or_404(Tag, slug__iexact=slug)
             posts = tag.posts.all()
+            tag_detail = True
 
         if search_query:
             posts = Post.objects.filter(Q(title__icontains=search_query) |
@@ -54,7 +57,9 @@ class BlogListView(ListView):
                    'prev_url': prev_url,
                    'next_url': next_url,
                    'is_paginated': is_paginated,
-                   'posts_count': posts_count}
+                   'posts_count': posts_count,
+                   'tag_detail': tag_detail,
+                   'tag_slug': tag_slug}
 
         return render(request, 'home.html', context)
 
@@ -141,3 +146,46 @@ class TagListView(ListView):
     model = Tag
     template_name = 'tag_list.html'
     context_object_name = 'tags'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TagListView, self).get_context_data(*args, **kwargs)
+        context['tag_list'] = True
+        return context
+
+
+class TagCreateView(LoginRequiredMixin, CreateView):
+    form_class = TagForm
+    template_name = 'tag_new.html'
+    login_url = 'login'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('tag_list')
+
+
+class TagUpdateView(LoginRequiredMixin, UpdateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'tag_edit.html'
+    success_url = reverse_lazy('tag_list')
+    login_url = 'login'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class TagDeleteView(LoginRequiredMixin, DeleteView):
+    model = Tag
+    template_name = 'tag_delete.html'
+    success_url = reverse_lazy('tag_list')
+    login_url = 'login'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)

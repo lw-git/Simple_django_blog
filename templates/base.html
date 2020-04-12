@@ -48,6 +48,15 @@
 				{% if request.path == '/' %}
 		        <a class="dropdown-item" href="#" id="toggle-sidebar">About</a>
 		        {% endif %}
+		        {% if tag_list %}
+		        <a class="dropdown-item" href="{% url 'tag_new' %}">New Tag</a>
+		        {% endif %}
+				{% if tag_detail %}	
+					{% if user.is_staff %}
+					<a  class="dropdown-item" href="{% url 'tag_edit' tag_slug %}">Edit Tag</a>
+					<a class="dropdown-item" href="{% url 'tag_delete' tag_slug %}">Delete Tag</a>
+					{% endif %}		
+				{% endif %}		        
 		        <a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a>
 				<a class="dropdown-item" href="{% url 'logout' %}">Log Out</a>
 			</div>

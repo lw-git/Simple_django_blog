@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+      <div class="col-lg-8 mx-auto">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4>New Tag</h4>
+          </div>
+          <div class="card-body">            
+            <form action="" method="POST">
+                {% csrf_token %}
+                {% for field in form.visible_fields %} 
+                  {% with field.errors as errors %}
+                      {% include "partials/_form_errors.html" %}
+                  {% endwith %}
+                	{{ field.label_tag }}
+                  <br />                  
+                  {{ field }}
+                  <br />                    
+                {% endfor %} 
+              <input type="submit" value="Save" class="btn btn-success btn-block col-4 mx-auto">
+            </form>
+          </div>
+        </div>
+      </div>
+{% endblock content %}

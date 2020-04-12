@@ -1,5 +1,5 @@
 from django import forms
-from .models import Comment, Post
+from .models import Comment, Post, Tag
 from pytils.translit import slugify
 from django.core.exceptions import ValidationError
 
@@ -57,3 +57,35 @@ class PostForm(forms.ModelForm):
             if count:
                 raise ValidationError('Post with that title already exist')
         return self.cleaned_data['title']
+
+
+class TagForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get('instance')
+        super(TagForm, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = Tag
+        fields = ['title']
+
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
+    def clean_title(self):
+        new_slug = slugify(self.cleaned_data['title'])
+
+        if new_slug == 'new':
+            raise ValidationError('Title may not be "New"')
+
+        count = Tag.objects.filter(slug=new_slug).count()
+
+        if self.instance:
+            if count and new_slug != self.instance.slug:
+                raise ValidationError('Tag with that title already exist')
+        else:
+            if count:
+                raise ValidationError('Tag with that title already exist')
+
+        return self.cleaned_data['title'].lower()
