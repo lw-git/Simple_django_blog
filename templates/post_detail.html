@@ -4,16 +4,27 @@
 
 {% block content %} 
   <h2>{{ post.title }}</h2>
-  <hr />                     
+  <div class="border-bottom text-small pt-2 pb-2"> 
+      Posted by  
+      <a href="{% url 'posts_by_author' post.author %}"
+      {% if post.author_status == 'staff' %}
+        class="red">{{ post.author }}      
+      {% else %}
+        class="blue">{{ post.author }}
+      {% endif %}</a>  
+      on <span>{{ post.created | date }}</span>
+      &nbsp;Comments: <span class="red">{{comments|length}}</span>
+  </div>                     
   {% if post.photo %}
     <img src="{{ post.photo.url }}" class="img-fluid" />
   {% endif %}
   <p>{{ post.body|linebreaks }}</p>   
-  <h4 class="mb-4 mt-4">Comments:</h4>
+  <h5 class="mb-4 mt-4">Comments:</h5>
 
   {% for comment in comments.all %}
   <div class="card mb-4">
     <div class="card-header">
+      <div class="text-small">
       <span style="float:right;">added {{ comment.created | date }}</span>
       Comment by  
       {% if comment.author_status == 'staff' %}
@@ -22,7 +33,8 @@
         <span class="blue">{{ comment.name }}</span>
       {% else %}
         {{ comment.name }}
-      {% endif %}   
+      {% endif %} 
+      </div>  
     </div>
     <div class="card-body">      
       <p class="card-text">{{ comment.body|linebreaks }}</p>              

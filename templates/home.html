@@ -3,21 +3,21 @@
 {% block content %}	
 	{% for post in page %}
 	<div class="card mb-4">
-	  <div class="card-header">
+	  <div class="card-header font-italic">	  	
 	  	<span style="float:right;">{{post.created }}</span>
-	    Posted by <a href="{% url 'posts_by_author' post.author.username %}"><span
+	    Posted by <a href="{% url 'posts_by_author' post.author.username %}"
 	    {% if post.author_status == 'staff' %}
-	    	class="red"
-	    {% elif post.author_status == 'user' %}
-	    	class="blue"
-	    {% endif %} >{{post.author}}</span></a>
+	    	class="red">
+	    {% else %}
+	    	class="blue">
+	    {% endif %}{{post.author}}</a>		
 	  </div>
 	  <div class="card-body">
 	    <h5 class="card-title">{{post.title}}</h5>
 	    <p class="card-text">{{post.body|truncatewords:15}}</p>
 	    <a href="{{ post.get_absolute_url }}" class="btn btn-light">Read</a>
 	  </div>
-	  <div class="card-footer text-muted">
+	  <div class="card-footer text-muted font-italic">
 	  	{% if post.tags.all %}
 	    	Теги: 
 	    	{% for tag in post.tags.all %}

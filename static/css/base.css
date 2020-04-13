@@ -1,10 +1,23 @@
-.red {	
+.red, .red:hover {	
 	color: red;
+	text-decoration: none;
 }
-.blue {	
+
+.blue, .blue:hover {	
 	color: blue;
+	text-decoration: none;
+}
+
+.gray, .gray:hover {	
+	color: gray;
+	text-decoration: none;
 }
 
 .hidden {
     display: none;
+}
+.text-small{
+	font-size: 13px;
+	font-weight: 500;
+	font-style: italic;
 }
