@@ -14,54 +14,38 @@ from .forms import CommentForm, PostForm, TagForm
 
 
 class BlogListView(ListView):
+    paginate_by = 3
+    template_name = 'home.html'
+    context_object_name = 'posts'
 
-    def get(self, request, author=None, slug=None):
-        tag_detail = False
-        tag_slug = slug
-        search_query = request.GET.get('search', '')
+    def get_queryset(self):
+        queryset = Post.objects.filter(published=True)
+        if 'slug' in self.kwargs:
+            tag = get_object_or_404(Tag, slug__iexact=self.kwargs['slug'])
+            queryset = tag.posts.all()
 
-        posts = Post.objects.filter(published=True)
-        posts_count = posts.count()
-
-        if slug:
-            tag = get_object_or_404(Tag, slug__iexact=slug)
-            posts = tag.posts.all()
-            tag_detail = True
-
-        if search_query:
-            posts = Post.objects.filter(Q(title__icontains=search_query) |
-                                        Q(body__icontains=search_query),
+        if 'search' in self.request.GET:
+            queryset = Post.objects.filter(Q(title__icontains=self.request.GET['search']) |
+                                        Q(body__icontains=self.request.GET['search']),
                                         published=True)
 
-        if author:
-            user = get_object_or_404(User, username=author)
-            posts = user.posts.filter(published=True)
+        if 'author' in self.kwargs:
+            user = get_object_or_404(User, username=self.kwargs['author'])
+            queryset = user.posts.filter(published=True)
+        return queryset
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(BlogListView, self).get_context_data(*args, **kwargs)
+        context['tag_slug'] = kwargs.get('slug')
+        context['tag_detail'] = False
+        posts = self.get_queryset()
         paginator = Paginator(posts, 3)
-        page_number = request.GET.get('page', 1)
-        page = paginator.get_page(page_number)
-
-        is_paginated = page.has_other_pages()
-
-        if page.has_previous():
-            prev_url = '?page={}'.format(page.previous_page_number())
-        else:
-            prev_url = ''
-
-        if page.has_next():
-            next_url = '?page={}'.format(page.next_page_number())
-        else:
-            next_url = ''
-
-        context = {'page': page,
-                   'prev_url': prev_url,
-                   'next_url': next_url,
-                   'is_paginated': is_paginated,
-                   'posts_count': posts_count,
-                   'tag_detail': tag_detail,
-                   'tag_slug': tag_slug}
-
-        return render(request, 'home.html', context)
+        page_number = self.request.GET.get('page', 1)
+        context['page'] = paginator.get_page(page_number)
+        context['posts_count'] = len(posts)
+        if context['tag_slug']:
+            context['tag_detail'] = True
+        return context
 
 
 class BlogDetailView(DetailView):
