@@ -36,7 +36,7 @@ class BlogListView(ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(BlogListView, self).get_context_data(*args, **kwargs)
-        context['tag_slug'] = kwargs.get('slug')
+        context['tag_slug'] = self.kwargs.get('slug')
         context['tag_detail'] = False
         posts = self.get_queryset()
         paginator = Paginator(posts, 3)
