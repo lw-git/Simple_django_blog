@@ -24,6 +24,11 @@
 	    		<a href="{{ tag.get_absolute_url }}">{{ tag.title }}</a> 	
 	    	{% endfor %}
 	    {% endif %}
+	    {% with post.comments.all|length as comments %}
+	        {% if comments > 0 %}
+	    	<span style="float:right;">Comments: <span class="red">{{comments}}</span></span>
+	    	{% endif %}
+	    {% endwith %}	    
 	  </div>
 	</div>	
 	{% endfor %}
