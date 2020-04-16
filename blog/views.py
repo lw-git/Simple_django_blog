@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, FormView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.models import User
@@ -88,8 +88,9 @@ class BlogDetailView(DetailView):
 
 class BlogCreateView(LoginRequiredMixin, CreateView):
     form_class = PostForm
-    template_name = 'post_new.html'
+    template_name = 'form.html'
     login_url = 'login'
+    extra_context = {'object_name': 'Post'}
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -99,8 +100,9 @@ class BlogCreateView(LoginRequiredMixin, CreateView):
 class BlogUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
-    template_name = 'post_edit.html'
+    template_name = 'form.html'
     login_url = 'login'
+    extra_context = {'update': True, 'object_name': 'Post'}
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -113,9 +115,10 @@ class BlogUpdateView(LoginRequiredMixin, UpdateView):
 
 class BlogDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
-    template_name = 'post_delete.html'
+    template_name = 'form.html'
     success_url = reverse_lazy('home')
     login_url = 'login'
+    extra_context = {'delete': True, 'object_name': 'Post'}
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -139,8 +142,9 @@ class TagListView(ListView):
 
 class TagCreateView(LoginRequiredMixin, CreateView):
     form_class = TagForm
-    template_name = 'tag_new.html'
+    template_name = 'form.html'
     login_url = 'login'
+    extra_context = {'object_name': 'Tag'}
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -153,9 +157,10 @@ class TagCreateView(LoginRequiredMixin, CreateView):
 class TagUpdateView(LoginRequiredMixin, UpdateView):
     model = Tag
     form_class = TagForm
-    template_name = 'tag_edit.html'
+    template_name = 'form.html'
     success_url = reverse_lazy('tag_list')
     login_url = 'login'
+    extra_context = {'update': True, 'object_name': 'Tag'}
 
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.is_staff:
@@ -165,9 +170,10 @@ class TagUpdateView(LoginRequiredMixin, UpdateView):
 
 class TagDeleteView(LoginRequiredMixin, DeleteView):
     model = Tag
-    template_name = 'tag_delete.html'
+    template_name = 'form.html'
     success_url = reverse_lazy('tag_list')
     login_url = 'login'
+    extra_context = {'delete': True, 'object_name': 'Tag'}
 
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.is_staff:

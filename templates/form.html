@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+      <div class="col-lg-8 mx-auto">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4>
+            {% if update %}Update{% elif delete %}Delete{% else %}New{% endif %}
+            {{ object_name }}
+            </h4>
+          </div>
+          <div class="card-body">            
+            <form action="" method="POST">
+                {% csrf_token %}
+                {% if delete %}
+                  <p>Are you sure you want to delete "{{ object.title }}"?</p>
+                {% else %}
+                  {% with form.non_field_errors as errors %}
+                      {% include "partials/_form_errors.html" %}
+                  {% endwith %}
+                  {% for field in form.visible_fields %} 
+                    {% with field.errors as errors %}
+                        {% include "partials/_form_errors.html" %}
+                    {% endwith %}
+                  	{{ field.label_tag }}
+                    <br />                  
+                    {{ field }}
+                    <br />                    
+                  {% endfor %} 
+                {% endif %}
+              <input type="submit" {% if delete %}value="Confirm" class="btn btn-danger btn-block col-4 mx-auto"{% else %} value="Save" class="btn btn-success btn-block col-4 mx-auto"{% endif %}>
+            </form> 
+          </div>
+        </div>
+      </div>
+{% endblock content %}
