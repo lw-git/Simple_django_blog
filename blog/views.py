@@ -13,7 +13,7 @@ from .models import Post, Tag
 from .forms import CommentForm, PostForm, TagForm
 
 
-class BlogListView(ListView):
+class PostListView(ListView):
     paginate_by = 3
     template_name = 'home.html'
     context_object_name = 'posts'
@@ -35,7 +35,7 @@ class BlogListView(ListView):
         return queryset
 
     def get_context_data(self, *args, **kwargs):
-        context = super(BlogListView, self).get_context_data(*args, **kwargs)
+        context = super(PostListView, self).get_context_data(*args, **kwargs)
         context['tag_slug'] = self.kwargs.get('slug')
         context['tag_detail'] = False
         posts = self.get_queryset()
@@ -48,13 +48,13 @@ class BlogListView(ListView):
         return context
 
 
-class BlogDetailView(DetailView):
+class PostDetailView(DetailView):
     model = Post
     context_object_name = 'post'
     template_name = 'post_detail.html'
 
     def get_context_data(self, *args, **kwargs):
-        context = super(BlogDetailView, self).get_context_data(*args, **kwargs)
+        context = super(PostDetailView, self).get_context_data(*args, **kwargs)
         context['comment_form'] = CommentForm(**{'user': self.request.user})
         context['comments'] = self.get_object().comments.filter(active=True)
         context['detail'] = True
@@ -86,7 +86,7 @@ class BlogDetailView(DetailView):
                            'detail': True})
 
 
-class BlogCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     form_class = PostForm
     template_name = 'form.html'
     login_url = 'login'
@@ -97,7 +97,7 @@ class BlogCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class BlogUpdateView(LoginRequiredMixin, UpdateView):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostForm
     template_name = 'form.html'
@@ -113,7 +113,7 @@ class BlogUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class BlogDeleteView(LoginRequiredMixin, DeleteView):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = 'form.html'
     success_url = reverse_lazy('home')
@@ -140,42 +140,55 @@ class TagListView(ListView):
         return context
 
 
-class TagCreateView(LoginRequiredMixin, CreateView):
+class TagView(LoginRequiredMixin, FormView):
     form_class = TagForm
     template_name = 'form.html'
     login_url = 'login'
-    extra_context = {'object_name': 'Tag'}
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+    def get_initial(self):
+        if self.kwargs.get('slug'):
+            obj = get_object_or_404(Tag, slug=self.kwargs.get('slug'))
+            self.initial = {'title': obj.title, 'obj': obj}
+        return self.initial.copy()
 
-    def get_success_url(self):
-        return reverse('tag_list')
+    def get_context_data(self, *args, **kwargs):
+        context = super(TagView, self).get_context_data(*args, **kwargs)
+        if 'edit' in self.request.path:
+            context['update'] = True
+        elif 'delete' in self.request.path:
+            context['delete'] = True
+        if 'tag' in self.request.path:
+            context['object_name'] = 'Tag'
+        elif 'post' in self.request.path:
+            context['object_name'] = 'Post'
 
+        if self.kwargs.get('slug'):
+            context['obj'] = self.get_initial()['obj']
+            form = self.get_form()
+            form.instance = context['obj']
+        else:
+            context['form'] = self.get_form()
+        return context
 
-class TagUpdateView(LoginRequiredMixin, UpdateView):
-    model = Tag
-    form_class = TagForm
-    template_name = 'form.html'
-    success_url = reverse_lazy('tag_list')
-    login_url = 'login'
-    extra_context = {'update': True, 'object_name': 'Tag'}
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        form = self.get_form()
+        if context.get('update'):
+            form.instance = context.get('obj')
+            form.data = request.POST
+        if context.get('delete'):
+            form.instance = context.get('obj')
+            form.instance.delete()
+            return redirect(reverse('tag_list'))
+
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('tag_list'))
+        else:
+            return self.form_invalid(form)
 
     def dispatch(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-
-class TagDeleteView(LoginRequiredMixin, DeleteView):
-    model = Tag
-    template_name = 'form.html'
-    success_url = reverse_lazy('tag_list')
-    login_url = 'login'
-    extra_context = {'delete': True, 'object_name': 'Tag'}
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            raise PermissionDenied
+        if self.kwargs.get('slug'):
+            if not self.request.user.is_staff:
+                raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)

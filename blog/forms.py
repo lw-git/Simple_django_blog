@@ -37,7 +37,7 @@ class PostForm(forms.ModelForm):
         fields = ['title', 'body', 'tags']
 
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'autofocus': True}),
             'body': forms.Textarea(attrs={'class': 'form-control'}),
             'tags': forms.SelectMultiple(attrs={'class': 'form-control'})
         }
@@ -70,13 +70,13 @@ class TagForm(forms.ModelForm):
         fields = ['title']
 
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'})
+            'title': forms.TextInput(attrs={'class': 'form-control', 'autofocus': True})
         }
 
     def clean_title(self):
         new_slug = slugify(self.cleaned_data['title'])
 
-        if new_slug == 'new':            
+        if new_slug == 'new':
             raise ValidationError('Title may not be "New"')
 
         count = Tag.objects.filter(slug=new_slug).count()

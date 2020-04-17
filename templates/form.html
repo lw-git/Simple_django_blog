@@ -13,8 +13,8 @@
             <form action="" method="POST">
                 {% csrf_token %}
                 {% if delete %}
-                  <p>Are you sure you want to delete "{{ object.title }}"?</p>
-                {% else %}
+                  <p class="text-center">Are you sure you want to delete "{{ obj }}"?</p>
+                {% else %}                  
                   {% with form.non_field_errors as errors %}
                       {% include "partials/_form_errors.html" %}
                   {% endwith %}
@@ -29,8 +29,8 @@
                   {% endfor %} 
                 {% endif %}
               <input type="submit" {% if delete %}value="Confirm" class="btn btn-danger btn-block col-4 mx-auto"{% else %} value="Save" class="btn btn-success btn-block col-4 mx-auto"{% endif %}>
-            </form> 
+            </form>             
           </div>
         </div>
-      </div>
+      </div> 
 {% endblock content %}
