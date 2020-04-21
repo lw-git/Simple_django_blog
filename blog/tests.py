@@ -6,7 +6,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 
-from .models import Post, Tag
+from .models import Post, Tag, Comment
 
 
 class PostModelTests(TestCase):
@@ -77,6 +77,73 @@ class PostModelTests(TestCase):
 
     def test_published(self):
         self.assertTrue(self.post.published)
+
+
+class CommentModelTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+
+        self.superuser = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@email.com',
+            password='supersecret'
+        )
+
+        self.post = Post.objects.create(
+            title='New Post',
+            body='New content',
+            author=self.user
+        )
+
+        self.comment_from_user = Comment.objects.create(
+            post=self.post,
+            name=self.user.username,
+            email=self.user.email,
+            body='Comment from user',
+            author_status='user',
+        )
+
+        self.comment_from_superuser = Comment.objects.create(
+            post=self.post,
+            name=self.superuser.username,
+            email=self.superuser.email,
+            body='Comment from user',
+            author_status='staff'
+        )
+
+    def test_string_representation(self):
+        comment = self.comment_from_user
+        self.assertEqual(
+            str(comment),
+            f'Comment by {comment.name} on {comment.post}'
+        )
+
+    def test_comment_is_active(self):
+        comment = self.comment_from_user
+        self.assertTrue(comment.active)
+
+    def test_author_status(self):
+        comment1 = self.comment_from_user
+        comment2 = self.comment_from_superuser
+        comment3 = Comment.objects.create(
+            post=self.post,
+            name='Test',
+            email='test@test.com',
+            body='Some text'
+        )
+        self.assertEqual(comment1.author_status, 'user')
+        self.assertEqual(comment2.author_status, 'staff')
+        self.assertEqual(comment3.author_status, 'anonymous')
+
+    def test_other_fields(self):
+        comment = self.comment_from_user
+        self.assertEqual(comment.name, self.user.username)
+        self.assertEqual(comment.email, self.user.email)
+        self.assertEqual(comment.body, 'Comment from user')
 
 
 class TagModelTests(TestCase):
