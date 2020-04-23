@@ -36,7 +36,7 @@ class TagListViewTests(TestCase):
         self.assertContains(response, self.tag3.title)
 
 
-class PostCreateViewTest(TestCase):
+class PostCreateViewTests(TestCase):
     def setUp(self):
         self.client = Client()
 
@@ -126,4 +126,139 @@ class PostCreateViewTest(TestCase):
         data = {'body': 'Some text...'}
         self.client.login(username='testuser', password='secret')
         response = self.client.post(reverse('post_new'), data)
+        self.assertEqual(response.status_code, 302)
+
+
+class PostUpdateViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.author = get_user_model().objects.create_user(
+            username='author',
+            email='author@email.com',
+            password='secret'
+        )
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+
+        self.admin = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@email.com',
+            password='supersecret'
+        )
+        self.tag1 = Tag.objects.create(
+            title='tag1'
+        )
+        self.tag2 = Tag.objects.create(
+            title='tag2'
+        )
+        self.post = Post.objects.create(
+            title='New Post',
+            body='New content',
+            author=self.author
+        )
+        self.post2 = Post.objects.create(
+            title='Existing post',
+            body='Existing content',
+            author=self.author
+        )
+
+    def test_get_response_for_author(self):
+        self.client.login(username='author', password='secret')
+        response = self.client.get(reverse('post_edit', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'form.html')
+
+    def test_get_response_for_superuser(self):
+        self.client.login(username='admin', password='supersecret')
+        response = self.client.get(reverse('post_edit', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'form.html')
+
+    def test_get_response_for_anonymous_user(self):
+        response = self.client.get(reverse('post_edit', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_response_for_another_user(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('post_edit', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_post_by_author(self):
+        data = {'title': 'Post edited by author',
+                'body': 'Edited content',
+                'tags': [self.tag1.id]}
+
+        posts = Post.objects.all()
+        self.assertEqual(posts.count(), 2)
+
+        self.client.login(username='author', password='secret')
+        response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(posts.count(), 2)
+        self.assertFalse(posts.filter(title__exact='New Post'))
+        self.assertTrue(posts.filter(title__exact='Post edited by author'))
+
+        edited_post = posts.filter(title__exact='Post edited by author').first()
+
+        self.assertEqual(edited_post.title, 'Post edited by author')
+        self.assertEqual(edited_post.body, 'Edited content')
+        self.assertEqual(edited_post.tags.count(), 1)
+        self.assertEqual(edited_post.tags.get(id=self.tag1.id), self.tag1)
+        self.assertEqual(edited_post.slug, slugify('Post edited by author'))
+
+    def test_update_post_by_superuser(self):
+        data = {'title': 'Post edited by admin',
+                'body': 'Edited content',
+                'tags': [self.tag1.id, self.tag2.id]}
+
+        posts = Post.objects.all()
+        self.assertEqual(posts.count(), 2)
+
+        self.client.login(username='admin', password='supersecret')
+        response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(posts.count(), 2)
+        self.assertFalse(posts.filter(title__exact='New Post'))
+        self.assertTrue(posts.filter(title__exact='Post edited by admin'))
+
+        edited_post = posts.filter(title__exact='Post edited by admin').first()
+
+        self.assertEqual(edited_post.title, 'Post edited by admin')
+        self.assertEqual(edited_post.body, 'Edited content')
+        self.assertEqual(edited_post.tags.count(), 2)
+        self.assertEqual(edited_post.tags.get(id=self.tag1.id), self.tag1)
+        self.assertEqual(edited_post.tags.get(id=self.tag2.id), self.tag2)
+        self.assertEqual(edited_post.slug, slugify('Post edited by admin'))
+
+    def test_update_post_title_to_not_unique_fails(self):
+        data = {'title': 'Existing post',
+                'body': 'Edited content',
+                'tags': [self.tag1.id, self.tag2.id]}
+
+        self.client.login(username='author', password='secret')
+        response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+
+    def test_update_post_set_title_value_new_fails(self):
+        data = {'title': 'New',
+                'body': 'Edited content',
+                'tags': [self.tag1.id, self.tag2.id]}
+
+        self.client.login(username='author', password='secret')
+        response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+
+    def test_update_post_without_title_fails(self):
+        data = {'body': 'Edited content',
+                'tags': [self.tag1.id, self.tag2.id]}
+
+        self.client.login(username='author', password='secret')
+        response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
         self.assertEqual(response.status_code, 302)
