@@ -262,3 +262,75 @@ class PostUpdateViewTests(TestCase):
         self.client.login(username='author', password='secret')
         response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
         self.assertEqual(response.status_code, 302)
+
+
+class PostDeleteViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.author = get_user_model().objects.create_user(
+            username='author',
+            email='author@email.com',
+            password='secret'
+        )
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+
+        self.admin = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@email.com',
+            password='supersecret'
+        )
+
+        self.post = Post.objects.create(
+            title='New Post',
+            body='New content',
+            author=self.author
+        )
+
+    def test_get_response_for_author(self):
+        self.client.login(username='author', password='secret')
+        response = self.client.get(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'form.html')
+
+    def test_get_response_for_superuser(self):
+        self.client.login(username='admin', password='supersecret')
+        response = self.client.get(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'form.html')
+
+    def test_get_response_for_anonymous_user(self):
+        response = self.client.get(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_response_for_another_user(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_post_by_author(self):
+        posts = Post.objects.all()
+        self.assertEqual(posts.count(), 1)
+
+        self.client.login(username='author', password='secret')
+        response = self.client.post(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(posts.count(), 0)
+        self.assertEqual(response.url, reverse('home'))
+
+    def test_delete_post_by_superuser(self):
+        posts = Post.objects.all()
+        self.assertEqual(posts.count(), 1)
+
+        self.client.login(username='admin', password='supersecret')
+        response = self.client.post(reverse('post_delete', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(posts.count(), 0)
+        self.assertEqual(response.url, reverse('home'))
