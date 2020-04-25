@@ -334,3 +334,104 @@ class PostDeleteViewTests(TestCase):
 
         self.assertEqual(posts.count(), 0)
         self.assertEqual(response.url, reverse('home'))
+
+
+class PostDetailViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.author = get_user_model().objects.create_user(
+            username='author',
+            email='author@email.com',
+            password='secret'
+        )
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+
+        self.admin = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@email.com',
+            password='supersecret'
+        )
+
+        self.post = Post.objects.create(
+            title='New Post',
+            body='New content',
+            author=self.author
+        )
+
+    def test_get_response_for_anonymous_user(self):
+        response = self.client.get(reverse('post_detail', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'post_detail.html')
+        self.assertContains(response, self.post.body)
+        self.assertContains(response, self.author.username)
+        self.assertNotContains(response, 'Edit Post')
+        self.assertNotContains(response, 'Delete Post')
+
+    def test_get_response_for_user(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('post_detail', args=[self.post.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'post_detail.html')
+        self.assertContains(response, self.post.body)
+        self.assertContains(response, self.author.username)
+        self.assertContains(response, 'Edit Post')
+        self.assertContains(response, 'Delete Post')
+
+    def test_comment_create_by_anonymous_user(self):
+        post = self.post
+        data = {'name': 'tester',
+                'email': 'test@test.com',
+                'body': 'some text'}
+        self.assertEqual(post.comments.count(), 0)
+        response = self.client.post(reverse('post_detail', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(post.comments.count(), 1)
+        comment = post.comments.last()
+        self.assertEqual(comment.name, 'tester')
+        self.assertEqual(comment.email, 'test@test.com')
+        self.assertEqual(comment.body, 'some text')
+        self.assertEqual(comment.author_status, 'anonymous')
+
+    def test_comment_create_by_anonymous_user_without_required_data_fails(self):
+        data = {'email': 'test@test.com',
+                'body': 'some text'}
+        response = self.client.post(reverse('post_detail', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+
+    def test_comment_create_by_user(self):
+        post = self.post
+        self.client.login(username='testuser', password='secret')
+        data = {
+            'body': 'some text'
+        }
+        self.assertEqual(post.comments.count(), 0)
+        response = self.client.post(reverse('post_detail', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(post.comments.count(), 1)
+        comment = post.comments.last()
+        self.assertEqual(comment.name, self.user.username)
+        self.assertEqual(comment.email, self.user.email)
+        self.assertEqual(comment.body, 'some text')
+        self.assertEqual(comment.author_status, 'user')
+
+    def test_comment_create_by_superuser(self):
+        post = self.post
+        self.client.login(username='admin', password='supersecret')
+        data = {
+            'body': 'some text'
+        }
+        self.assertEqual(post.comments.count(), 0)
+        response = self.client.post(reverse('post_detail', args=[self.post.slug]), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(post.comments.count(), 1)
+        comment = post.comments.last()
+        self.assertEqual(comment.name, self.admin.username)
+        self.assertEqual(comment.email, self.admin.email)
+        self.assertEqual(comment.body, 'some text')
+        self.assertEqual(comment.author_status, 'staff')
