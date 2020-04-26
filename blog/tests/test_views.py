@@ -1,3 +1,4 @@
+import time
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -435,3 +436,113 @@ class PostDetailViewTests(TestCase):
         self.assertEqual(comment.email, self.admin.email)
         self.assertEqual(comment.body, 'some text')
         self.assertEqual(comment.author_status, 'staff')
+
+
+class PostListViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.author = get_user_model().objects.create_user(
+            username='author',
+            email='author@email.com',
+            password='secret'
+        )
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+        self.tag1 = Tag.objects.create(
+            title='tag1'
+        )
+        self.tag2 = Tag.objects.create(
+            title='tag2'
+        )
+
+        self.post1 = Post.objects.create(
+            title='Post 1',
+            body='Python 2',
+            author=self.author
+        )
+        time.sleep(0.01)
+        self.post2 = Post.objects.create(
+            title='Post 2',
+            body='Python 3',
+            author=self.user
+        )
+        self.post2.tags.set([self.tag1])
+        time.sleep(0.01)
+        self.post3 = Post.objects.create(
+            title='Post 3',
+            body='Django',
+            author=self.author
+        )
+        self.post3.tags.set([self.tag1, self.tag2])
+        time.sleep(0.01)
+        self.post4 = Post.objects.create(
+            title='Post 4',
+            body='Aiohttp',
+            author=self.author
+        )
+
+    def test_get_response_for_anonymous_user(self):
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertEqual(len(response.context['posts']), 3)
+        self.assertEqual(response.context['posts_count'], 4)
+        self.assertContains(response, self.post4.title)
+        self.assertContains(response, self.post3.title)
+        self.assertContains(response, self.post2.title)
+        self.assertContains(response, self.tag1.title)
+        self.assertContains(response, self.tag2.title)
+        self.assertContains(response, self.author.username)
+        self.assertContains(response, self.user.username)
+        self.assertNotContains(response, self.post1.title)
+        self.assertNotContains(response, 'New Post')
+
+    def test_get_response_for_user(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertEqual(len(response.context['posts']), 3)
+        self.assertEqual(response.context['posts_count'], 4)
+        self.assertContains(response, self.post4.title)
+        self.assertContains(response, self.post3.title)
+        self.assertContains(response, self.post2.title)
+        self.assertContains(response, self.tag1.title)
+        self.assertContains(response, self.tag2.title)
+        self.assertContains(response, self.author.username)
+        self.assertContains(response, self.user.username)
+        self.assertNotContains(response, self.post1.title)
+        self.assertContains(response, 'New Post')
+
+    def test_filter_posts_by_tag(self):
+        response = self.client.get(reverse('tag_detail', args=['tag1']))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['posts']), 2)
+        self.assertContains(response, self.post3.title)
+        self.assertContains(response, self.post2.title)
+        self.assertContains(response, self.tag1.title)
+        self.assertNotContains(response, self.post1.title)
+        self.assertNotContains(response, self.post4.title)
+
+    def test_filter_posts_by_author(self):
+        response = self.client.get(reverse('posts_by_author', args=[self.author.username]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['posts']), 3)
+        self.assertContains(response, self.post4.title)
+        self.assertContains(response, self.post3.title)
+        self.assertContains(response, self.post1.title)
+        self.assertNotContains(response, self.post2.title)
+
+    def test_filter_posts_by_search_query(self):
+        response = self.client.get(reverse('home'), {'search': 'python'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['posts']), 2)
+        self.assertContains(response, self.post1.title)
+        self.assertContains(response, self.post2.title)
+        self.assertNotContains(response, self.post3.title)
+        self.assertNotContains(response, self.post4.title)
