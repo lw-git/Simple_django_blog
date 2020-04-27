@@ -120,14 +120,19 @@ class PostCreateViewTests(TestCase):
                 'tags': [self.tag1.id, self.tag2.id]}
 
         self.client.login(username='testuser', password='secret')
+        self.assertEqual(Post.objects.count(), 1)
         response = self.client.post(reverse('post_new'), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Post.objects.count(), 1)
+
 
     def test_create_post_without_required_field_fails(self):
         data = {'body': 'Some text...'}
         self.client.login(username='testuser', password='secret')
+        self.assertEqual(Post.objects.count(), 1)
         response = self.client.post(reverse('post_new'), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Post.objects.count(), 1)
 
 
 class PostUpdateViewTests(TestCase):
@@ -245,7 +250,10 @@ class PostUpdateViewTests(TestCase):
 
         self.client.login(username='author', password='secret')
         response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        post = Post.objects.filter(title__exact='Existing post').first()
+        self.assertEqual(Post.objects.filter(title__exact='Existing post').count(), 1)
+        self.assertEqual(post.body, 'Existing content')
 
     def test_update_post_set_title_value_new_fails(self):
         data = {'title': 'New',
@@ -254,7 +262,9 @@ class PostUpdateViewTests(TestCase):
 
         self.client.login(username='author', password='secret')
         response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Post.objects.filter(title__exact='New').first())
+        self.assertTrue(Post.objects.filter(title__exact='Existing post').first())
 
     def test_update_post_without_title_fails(self):
         data = {'body': 'Edited content',
@@ -262,7 +272,8 @@ class PostUpdateViewTests(TestCase):
 
         self.client.login(username='author', password='secret')
         response = self.client.post(reverse('post_edit', args=[self.post.slug]), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Post.objects.filter(title__exact='Existing post').first())
 
 
 class PostDeleteViewTests(TestCase):
@@ -400,10 +411,13 @@ class PostDetailViewTests(TestCase):
         self.assertEqual(comment.author_status, 'anonymous')
 
     def test_comment_create_by_anonymous_user_without_required_data_fails(self):
+        post = self.post
         data = {'email': 'test@test.com',
                 'body': 'some text'}
         response = self.client.post(reverse('post_detail', args=[self.post.slug]), data)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(post.comments.count(), 0)
+
 
     def test_comment_create_by_user(self):
         post = self.post
@@ -546,3 +560,137 @@ class PostListViewTests(TestCase):
         self.assertContains(response, self.post2.title)
         self.assertNotContains(response, self.post3.title)
         self.assertNotContains(response, self.post4.title)
+
+
+class TagViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+        self.admin = get_user_model().objects.create_superuser(
+            username='admin',
+            email='admin@email.com',
+            password='supersecret'
+        )
+        self.tag1 = Tag.objects.create(
+            title='tag1'
+        )
+        self.tag2 = Tag.objects.create(
+            title='tag2'
+        )
+
+    def test_create_tag_by_anonymous_user_fails(self):
+        response = self.client.get(reverse('tag_new'))
+        self.assertEqual(response.status_code, 302)
+        count = Tag.objects.count()
+        self.assertEqual(count, 2)
+        data = {'title': 'new tag'}
+        response2 = self.client.post(reverse('tag_new'), data=data)
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(count, 2)
+
+    def test_update_tag_by_anonymous_user_fails(self):
+        response = self.client.get(reverse('tag_edit', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 403)
+        data = {'title': 'new tag'}
+        response2 = self.client.post(reverse('tag_edit', args=[self.tag1.slug]), data)
+        self.assertEqual(response2.status_code, 403)
+        self.assertFalse(Tag.objects.filter(title__exact='new tag').first())
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_delete_tag_by_anonymous_user_fails(self):
+        response = self.client.get(reverse('tag_delete', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 403)
+        response2 = self.client.post(reverse('tag_delete', args=[self.tag1.slug]))
+        self.assertEqual(response2.status_code, 403)
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_create_tag_by_user(self):
+        self.client.login(username='testuser', password='secret')
+        data = {'title': 'new tag'}
+        response = self.client.post(reverse('tag_new'), data)
+        self.assertEqual(response.status_code, 302)
+        count = Tag.objects.count()
+        self.assertEqual(count, 3)
+        self.assertTrue(Tag.objects.filter(title__exact='new tag').first())
+
+    def test_update_tag_by_user_fails(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('tag_edit', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 403)
+        data = {'title': 'new tag'}
+        response2 = self.client.post(reverse('tag_edit', args=[self.tag1.slug]), data)
+        self.assertEqual(response2.status_code, 403)
+        self.assertFalse(Tag.objects.filter(title__exact='new tag').first())
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_delete_tag_by_user_fails(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('tag_delete', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 403)
+        response2 = self.client.post(reverse('tag_delete', args=[self.tag1.slug]))
+        self.assertEqual(response2.status_code, 403)
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_update_tag_by_superuser(self):
+        self.client.login(username='admin', password='supersecret')
+        response = self.client.get(reverse('tag_edit', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 200)
+        data = {'title': 'new tag'}
+        response2 = self.client.post(reverse('tag_edit', args=[self.tag1.slug]), data)
+        self.assertEqual(response2.status_code, 302)
+        self.assertTrue(Tag.objects.filter(title__exact='new tag').first())
+        self.assertFalse(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_delete_tag_by_superuser(self):
+        self.client.login(username='admin', password='supersecret')
+        self.assertEqual(Tag.objects.count(), 2)
+        response = self.client.post(reverse('tag_delete', args=[self.tag1.slug]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Tag.objects.filter(title__exact='tag1').first())
+        self.assertEqual(Tag.objects.count(), 1)
+
+    def test_create_tag_without_title_fails(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.post(reverse('tag_new'))
+        self.assertEqual(response.status_code, 200)
+        count = Tag.objects.count()
+        self.assertEqual(count, 2)
+        self.assertFalse(Tag.objects.filter(title__exact='new').first())
+
+    def test_create_tag_set_title_value_new_fails(self):
+        self.client.login(username='testuser', password='secret')
+        data = {'title': 'new'}
+        response = self.client.post(reverse('tag_new'), data)
+        self.assertEqual(response.status_code, 200)
+        count = Tag.objects.count()
+        self.assertEqual(count, 2)
+        self.assertFalse(Tag.objects.filter(title__exact='new').first())
+
+    def test_create_tag_with_not_unique_title_fails(self):
+        self.client.login(username='testuser', password='secret')
+        data = {'title': 'tag1'}
+        response = self.client.post(reverse('tag_new'), data)
+        self.assertEqual(response.status_code, 200)
+        count = Tag.objects.count()
+        self.assertEqual(count, 2)
+
+    def test_update_tag_set_title_value_new_fails(self):
+        self.client.login(username='admin', password='supersecret')
+        data = {'title': 'new'}
+        response = self.client.post(reverse('tag_edit', args=[self.tag1.slug]), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Tag.objects.filter(title__exact='new').first())
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
+
+    def test_update_tag_on_not_unique_title_fails(self):
+        self.client.login(username='admin', password='supersecret')
+        data = {'title': 'tag2'}
+        response = self.client.post(reverse('tag_edit', args=[self.tag1.slug]), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Tag.objects.filter(title__exact='tag1').first())
