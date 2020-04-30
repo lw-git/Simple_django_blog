@@ -96,3 +96,47 @@ class SignupViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(get_user_model().objects.count(), 1)
+
+
+class LoginViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        self.user = get_user_model().objects.create_user(
+            username='testuser',
+            email='test@email.com',
+            password='secret'
+        )
+
+    def test_get_response_for_anonymous_user(self):
+        response = self.client.get(reverse('login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed('registration/login.html')
+
+    def test_get_response_for_authenticated_user(self):
+        self.client.login(username='testuser', password='secret')
+        response = self.client.get(reverse('login'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_login_user(self):
+        data = {
+            'username': 'testuser',
+            'password': 'secret',
+        }
+        response = self.client.post(reverse('login'), data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'home.html')
+        self.assertTrue(response.context['user'].is_authenticated)
+
+    def test_login_user_with_wrong_credentials_fails(self):
+        self.assertEqual(get_user_model().objects.count(), 1)
+        data = {
+            'username': 'testuser',
+            'password': 'secret2'
+        }
+        response = self.client.post(reverse('login'), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context['form'].errors['__all__'].data[0].message,
+            'Please enter a correct %(username)s and password. Note that both fields may be case-sensitive.'
+        )
